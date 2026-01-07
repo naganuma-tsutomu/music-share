@@ -4,34 +4,55 @@
 import { pb } from '@/lib/pocketbase';
 import { revalidatePath } from 'next/cache';
 
-// URLからタイトルを取得するヘルパー関数
-async function fetchMetaTitle(url: string): Promise<string> {
+// URLからメタデータ（タイトル・画像）を取得する関数
+async function fetchMetaData(url: string) {
+  let title = '';
+  let thumbnail = '';
+
   try {
-    // 1. YouTubeの場合 (公式のoEmbed機能を使用・一番確実)
+    // 1. YouTubeの場合 (専用処理)
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      // タイトルはoEmbedで取得
       const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
       const res = await fetch(oembedUrl);
       if (res.ok) {
         const data = await res.json();
-        return data.title; // 動画タイトルを返す
+        title = data.title;
+        // サムネイルは高画質版を生成
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        const videoId = (match && match[2].length === 11) ? match[2] : null;
+        if (videoId) {
+          thumbnail = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+        }
       }
     }
+    // 2. Apple Music やその他 (OGPタグからスクレイピング)
+    else {
+      const res = await fetch(url, { headers: { 'User-Agent': 'bot' } });
+      const html = await res.text();
 
-    // 2. その他のサイト (Apple Musicなど)
-    // ページのHTMLを取得して <title> タグの中身を簡易的に抜き出す
-    const res = await fetch(url, { headers: { 'User-Agent': 'bot' } });
-    const html = await res.text();
-    const titleMatch = html.match(/<title>([^<]*)<\/title>/i);
+      // <title>タグの取得
+      const titleMatch = html.match(/<title>([^<]*)<\/title>/i);
+      if (titleMatch && titleMatch[1]) {
+        title = titleMatch[1].replace(' - Apple Music', '').trim();
+      }
 
-    if (titleMatch && titleMatch[1]) {
-      // "曲名 - アーティスト" などの余計な空白を除去して返す
-      return titleMatch[1].replace(' - Apple Music', '').trim();
+      // <meta property="og:image" ...> の取得
+      const imageMatch = html.match(/<meta property="og:image" content="([^"]+)"/i);
+      if (imageMatch && imageMatch[1]) {
+        thumbnail = imageMatch[1];
+
+        // Apple Musicの画像はサイズ指定ができる場合があるので、高画質化の調整（任意）
+        // 例: {w}x{h}bb.jpg -> 600x600bb.jpg に置換など
+        thumbnail = thumbnail.replace('{w}x{h}', '600x600');
+      }
     }
   } catch (error) {
-    console.error('Title fetch failed:', error);
+    console.error('Metadata fetch failed:', error);
   }
 
-  return ''; // 失敗したら空文字
+  return { title, thumbnail };
 }
 
 export async function addMusicPost(formData: FormData) {
@@ -39,16 +60,12 @@ export async function addMusicPost(formData: FormData) {
   const comment = formData.get('comment') as string;
   const username = formData.get('username') as string;
 
-  // プラットフォーム自動判定
   let platform = 'other';
-  if (url.includes('youtube.com') || url.includes('youtu.be')) {
-    platform = 'youtube';
-  } else if (url.includes('music.apple.com')) {
-    platform = 'apple_music';
-  }
+  if (url.includes('youtube.com') || url.includes('youtu.be')) platform = 'youtube';
+  else if (url.includes('music.apple.com')) platform = 'apple_music';
 
-  // ★ここでタイトルを自動取得
-  const title = await fetchMetaTitle(url);
+  // ★メタデータを一括取得
+  const { title, thumbnail } = await fetchMetaData(url);
 
   try {
     await pb.collection('music_posts').create({
@@ -56,7 +73,8 @@ export async function addMusicPost(formData: FormData) {
       comment,
       username,
       platform,
-      title, // 取得したタイトルも保存
+      title,
+      thumbnail, // 画像URLも保存
     });
 
     revalidatePath('/');
