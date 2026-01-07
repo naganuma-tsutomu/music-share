@@ -1,0 +1,19 @@
+name: Trigger Infra Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify-infra:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch Deployment Event
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          repository: naganuma-tsutomu/proxmox-iac-project
+
+          token: ${{ secrets.INFRA_REPO_PAT }}
+
+          event-type: deploy-music-share
