@@ -11,4 +11,5 @@ export interface MusicPost {
   username: string; // 投稿者名 (簡易的に)
   platform: 'youtube' | 'apple_music' | 'other';
   title?: string;
+  thumbnail?: string;
 }

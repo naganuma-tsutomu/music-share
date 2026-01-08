@@ -1,67 +1,87 @@
-
 'use client'
 
 import { addMusicPost } from '@/app/actions';
 import { useRef } from 'react';
-import { useFormStatus } from 'react-dom'; // 追加
+import { useFormStatus } from 'react-dom';
+import toast from 'react-hot-toast';
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
 
 export default function AddMusicForm() {
   const formRef = useRef<HTMLFormElement>(null);
-  const { pending } = useFormStatus(); // 追加
+  const { pending } = useFormStatus();
 
   async function clientAction(formData: FormData) {
-    // Server Actionを呼び出し
     const result = await addMusicPost(formData);
 
     if (result.success) {
-      // 成功したらフォームをクリア
       formRef.current?.reset();
-      alert('保存しました！');
+      toast.success('保存しました！');
     } else {
-      alert('エラーが発生しました');
+      toast.error('エラーが発生しました');
     }
   }
 
   return (
-    <form ref={formRef} action={clientAction} className="bg-white p-4 rounded shadow mb-8">
-      <h2 className="font-bold mb-4">新しい音楽を追加</h2>
-
-      <div className="mb-4">
-        <label className="block text-sm font-bold mb-1">投稿者</label>
-        <select name="username" className="w-full border p-2 rounded">
-          <option value="自分">自分</option>
-          <option value="友人A">友人A</option>
-          <option value="友人B">友人B</option>
-        </select>
+    <form ref={formRef} action={clientAction} className="space-y-4">
+      <div className="grid w-full items-center gap-1.5">
+        <Label htmlFor="username">
+          投稿者
+        </Label>
+        {/* Using native select with Input styles for simplicity without Radix Select */}
+        <div className="relative">
+            <select 
+                id="username"
+                name="username" 
+                className={cn(
+                  "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
+                )}
+            >
+            <option value="自分">自分</option>
+            <option value="友人A">友人A</option>
+            <option value="友人B">友人B</option>
+            </select>
+             <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                <svg className="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+        </div>
       </div>
 
-      <div className="mb-4">
-        <label className="block text-sm font-bold mb-1">URL</label>
-        <input
+      <div className="grid w-full items-center gap-1.5">
+        <Label htmlFor="url">
+          URL
+        </Label>
+        <Input
           type="url"
+          id="url"
           name="url"
           required
           placeholder="https://..."
-          className="w-full border p-2 rounded"
         />
       </div>
 
-      <div className="mb-4">
-        <label className="block text-sm font-bold mb-1">コメント</label>
-        <textarea
+      <div className="grid w-full items-center gap-1.5">
+        <Label htmlFor="comment">
+          コメント
+        </Label>
+        <Textarea
+          id="comment"
           name="comment"
-          className="w-full border p-2 rounded"
           placeholder="ここが最高！"
+          rows={3}
         />
       </div>
 
-      <button
+      <Button
         type="submit"
-        disabled={pending} // 追加
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
+        disabled={pending} 
+        className="w-full"
       >
-        {pending ? '保存中...' : '保存する'} {/* 追加 */}
-      </button>
+        {pending ? '保存中...' : '保存する'} 
+      </Button>
     </form>
   );
 }

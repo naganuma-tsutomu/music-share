@@ -84,3 +84,45 @@ export async function addMusicPost(formData: FormData) {
     return { success: false };
   }
 }
+
+export async function updateMusicPost(formData: FormData) {
+  const id = formData.get('id') as string;
+  const url = formData.get('url') as string;
+  const comment = formData.get('comment') as string;
+  const username = formData.get('username') as string;
+
+  let platform = 'other';
+  if (url.includes('youtube.com') || url.includes('youtu.be')) platform = 'youtube';
+  else if (url.includes('music.apple.com')) platform = 'apple_music';
+
+  // メタデータを再取得（URLが変更されている可能性があるため）
+  const { title, thumbnail } = await fetchMetaData(url);
+
+  try {
+    await pb.collection('music_posts').update(id, {
+      url,
+      comment,
+      username,
+      platform,
+      title,
+      thumbnail,
+    });
+
+    revalidatePath('/');
+    return { success: true };
+  } catch (error) {
+    console.error('PocketBase Update Error:', error);
+    return { success: false };
+  }
+}
+
+export async function deleteMusicPost(id: string) {
+  try {
+    await pb.collection('music_posts').delete(id);
+    revalidatePath('/');
+    return { success: true };
+  } catch (error) {
+    console.error('PocketBase Delete Error:', error);
+    return { success: false };
+  }
+}
