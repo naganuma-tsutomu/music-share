@@ -39,59 +39,61 @@ export default async function Home() {
         <AddMusicForm />
 
         <div className="space-y-6">
-          {posts.items.map((post) => (
-            <div key={post.id} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          {posts.items.map((post: MusicPost) => {
+            const youtubeId = post.platform === 'youtube' ? getYouTubeId(post.url) : null;
 
-              {/* ユーザー情報ヘッダー */}
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center gap-2">
-                  {/* ... (アイコンなど) ... */}
-                  <span className="font-bold text-gray-700">{post.username}</span>
-                  {getPlatformBadge(post.platform)}
+            return (
+              <div key={post.id} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-xs">
+                      {post.username.slice(0, 2)}
+                    </div>
+                    <span className="font-bold text-gray-700">{post.username}</span>
+                    {getPlatformBadge(post.platform)}
+                  </div>
+                  <span className="text-xs text-gray-400">
+                    {new Date(post.created).toLocaleDateString()}
+                  </span>
                 </div>
-                <span className="text-xs text-gray-400">
-                  {new Date(post.created).toLocaleDateString()}
-                </span>
-              </div>
-
-              {/* コンテンツエリア */}
-              <div className="mb-3">
-                <a
-                  href={post.url}
-                  target="_blank"
-                  className="text-gray-900 font-bold hover:text-blue-600 block mb-2 text-lg leading-tight"
-                >
-                  {post.title || post.url}
-                </a>
-
-                {/* ★ここが変わりました：保存されたサムネイルを表示するだけ！ */}
-                {post.thumbnail && (
-                  <a href={post.url} target="_blank" className="block mt-3 group relative overflow-hidden rounded-lg bg-gray-100">
-                    <img
-                      src={post.thumbnail}
-                      alt={post.title || "thumbnail"}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
-                    {/* YouTubeの場合だけ再生アイコンを出す演出 */}
-                    {post.platform === 'youtube' && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20">
+                <div className="mb-3">
+                  <a
+                    href={post.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-900 font-bold hover:text-blue-600 block mb-2 break-all text-lg"
+                  >
+                    {post.title ? post.title : post.url}
+                  </a>
+                  {post.comment && (
+                    <p className="text-gray-600 text-sm mb-2">
+                      {post.comment}
+                    </p>
+                  )}
+                  {post.platform === 'youtube' && youtubeId && (
+                    <a href={post.url} target="_blank" rel="noopener noreferrer" className="block mt-3 group relative overflow-hidden rounded-lg">
+                      <img
+                        src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
+                        alt="YouTube Thumbnail"
+                        className="w-full object-cover aspect-video group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
                         <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
-                          <div className="ml-1 border-t-[8px] border-t-transparent border-l-[14px] border-l-red-600 border-b-[8px] border-b-transparent"></div>
+                          <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[14px] border-l-red-600 border-b-[8px] border-b-transparent ml-1"></div>
                         </div>
                       </div>
-                    )}
-                  </a>
-                )}
-
-                {post.comment && (
-                  <p className="text-gray-600 text-sm mt-3 bg-gray-50 p-2 rounded">
-                    {post.comment}
-                  </p>
-                )}
+                    </a>
+                  )}
+                  {post.comment && post.platform !== 'youtube' && (
+                    <p className="text-gray-600 text-sm mt-2 bg-gray-50 p-2 rounded">
+                      {post.comment}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </main>
