@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@plugin "tailwindcss-animate";
-
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -36,13 +34,77 @@
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+
+  @keyframes enter {
+    from {
+      opacity: var(--tw-enter-opacity, 1);
+      transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), 1) rotate(var(--tw-enter-rotate, 0));
+    }
+  }
+
+  @keyframes exit {
+    to {
+      opacity: var(--tw-exit-opacity, 1);
+      transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), 1) rotate(var(--tw-exit-rotate, 0));
+    }
+  }
 }
 
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-*/
+/* Animation utilities compatible with tailwindcss-animate usage */
+@utility animate-in {
+  animation-name: enter;
+  animation-duration: 0.15s;
+  animation-fill-mode: forwards;
+  --tw-enter-opacity: 1;
+  --tw-enter-scale: 1;
+  --tw-enter-rotate: 0;
+  --tw-enter-translate-x: 0;
+  --tw-enter-translate-y: 0;
+}
+
+@utility animate-out {
+  animation-name: exit;
+  animation-duration: 0.15s;
+  animation-fill-mode: forwards;
+  --tw-exit-opacity: 1;
+  --tw-exit-scale: 1;
+  --tw-exit-rotate: 0;
+  --tw-exit-translate-x: 0;
+  --tw-exit-translate-y: 0;
+}
+
+@utility fade-in {
+  --tw-enter-opacity: 0;
+}
+
+@utility fade-out {
+  --tw-exit-opacity: 0;
+}
+
+@utility zoom-in-95 {
+  --tw-enter-scale: 0.95;
+}
+
+@utility zoom-out-95 {
+  --tw-exit-scale: 0.95;
+}
+
+@utility slide-in-from-left-5 {
+  --tw-enter-translate-x: -1.25rem;
+}
+
+/* Override duration utilities to affect animation-duration */
+@utility duration-75 { transition-duration: 75ms; animation-duration: 75ms; }
+@utility duration-100 { transition-duration: 100ms; animation-duration: 100ms; }
+@utility duration-150 { transition-duration: 150ms; animation-duration: 150ms; }
+@utility duration-200 { transition-duration: 200ms; animation-duration: 200ms; }
+@utility duration-300 { transition-duration: 300ms; animation-duration: 300ms; }
+@utility duration-500 { transition-duration: 500ms; animation-duration: 500ms; }
+@utility duration-700 { transition-duration: 700ms; animation-duration: 700ms; }
+@utility duration-1000 { transition-duration: 1000ms; animation-duration: 1000ms; }
+
+
+/* Default border color compatibility */
 @layer base {
   *,
   ::after,

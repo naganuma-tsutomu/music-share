@@ -1,7 +1,7 @@
 // app/actions.ts
 'use server'
 
-import { pb } from '@/lib/pocketbase';
+import { createClient } from '@/lib/pocketbase';
 import { revalidatePath } from 'next/cache';
 
 // URLからメタデータ（タイトル・画像）を取得する関数
@@ -56,9 +56,12 @@ async function fetchMetaData(url: string) {
 }
 
 export async function addMusicPost(formData: FormData) {
+  const pb = await createClient();
   const url = formData.get('url') as string;
   const comment = formData.get('comment') as string;
-  const username = formData.get('username') as string;
+  
+  // ログインしているユーザーがいればその名前を使用、いなければフォームの値（またはAnonymous）
+  const username = pb.authStore.model?.username || (formData.get('username') as string) || 'Anonymous';
 
   let platform = 'other';
   if (url.includes('youtube.com') || url.includes('youtu.be')) platform = 'youtube';
@@ -86,10 +89,13 @@ export async function addMusicPost(formData: FormData) {
 }
 
 export async function updateMusicPost(formData: FormData) {
+  const pb = await createClient();
   const id = formData.get('id') as string;
   const url = formData.get('url') as string;
   const comment = formData.get('comment') as string;
-  const username = formData.get('username') as string;
+  
+  // 更新時もログインユーザーを優先
+  const username = pb.authStore.model?.username || (formData.get('username') as string) || 'Anonymous';
 
   let platform = 'other';
   if (url.includes('youtube.com') || url.includes('youtu.be')) platform = 'youtube';
@@ -117,6 +123,7 @@ export async function updateMusicPost(formData: FormData) {
 }
 
 export async function deleteMusicPost(id: string) {
+  const pb = await createClient();
   try {
     await pb.collection('music_posts').delete(id);
     revalidatePath('/');

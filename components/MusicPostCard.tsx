@@ -95,22 +95,7 @@ export default function MusicPostCard({ post }: MusicPostCardProps) {
         </CardHeader>
         <CardContent>
           <form action={handleUpdate} className="space-y-4">
-            <div className="space-y-2">
-                <Label>投稿者</Label>
-                <div className="relative">
-                    <select 
-                        name="username" 
-                        defaultValue={post.username} 
-                        className={cn(
-                        "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
-                        )}
-                    >
-                    <option value="自分">自分</option>
-                    <option value="友人A">友人A</option>
-                    <option value="友人B">友人B</option>
-                    </select>
-                </div>
-            </div>
+            {/* 投稿者フィールドを削除。サーバー側で認証ユーザー名を使用。 */}
 
             <div className="space-y-2">
                 <Label>URL</Label>
