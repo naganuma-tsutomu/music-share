@@ -25,7 +25,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-lg border-border/50">
         <CardHeader>
           <CardTitle>ログイン</CardTitle>
-          <CardDescription>アカウントにログインして音楽をシェアしましょう。</CardDescription>
+          <CardDescription>アカウントにログインして音楽をシェア。</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={action} className="space-y-4">
@@ -37,7 +37,7 @@ export default function LoginPage() {
               <Label htmlFor="password">パスワード</Label>
               <Input id="password" name="password" type="password" required />
             </div>
-            
+
             {state?.success === false && (
               <p className="text-sm text-red-500">{state.message}</p>
             )}
